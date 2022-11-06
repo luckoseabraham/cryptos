@@ -33,6 +33,8 @@
 
     <include
         android:id="@+id/contentMain"
-        layout="@layout/content_main" />
+        layout="@layout/content_main"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
