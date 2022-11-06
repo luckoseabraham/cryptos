@@ -9,6 +9,11 @@ class FirestoreAuthLiveData : LiveData<FirebaseUser?>() {
     private val authStateListener = FirebaseAuth.AuthStateListener {
         value = firebaseAuth.currentUser
     }
+    
+
+    fun logout() {
+        firebaseAuth.signOut()
+    }
 
     fun updateUser() {
         value = firebaseAuth.currentUser

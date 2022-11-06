@@ -1,8 +1,9 @@
 package edu.utexas.cryptos
-
 import android.app.Activity
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.AdapterView
@@ -13,13 +14,9 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.FragmentTransaction
-import androidx.fragment.app.add
 import androidx.fragment.app.commit
-import androidx.recyclerview.widget.DividerItemDecoration
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
-import edu.utexas.cryptos.adapter.AssetMetaAdapter
 import edu.utexas.cryptos.databinding.ActivityMainBinding
 import edu.utexas.cryptos.fragment.AllAssetsFragment
 import edu.utexas.cryptos.fragment.FavoriteFragment
@@ -53,13 +50,30 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.logout -> {
+                viewModel.signOut()
+                viewModel.login(signInLauncher)
+                return true
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
 
-        AuthInit(viewModel, signInLauncher)
+        viewModel.login(signInLauncher)
 
         GlobalScope.launch {
             while (coroutineContext.isActive) {
@@ -113,7 +127,7 @@ class MainActivity : AppCompatActivity() {
                 override fun onTabSelected(tab: TabLayout.Tab) {
                     //do stuff here
 //                    tab.position
-                    Log.d("LUKE", "Tab selected is ${tab.position}",)
+                    Log.d("LUKE", "Tab selected is ${tab.position}")
                     if(tab.position == 0 ) {
 //                        //select favorites fragment.
                             supportFragmentManager.commit {

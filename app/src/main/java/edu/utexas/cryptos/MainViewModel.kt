@@ -1,7 +1,11 @@
 package edu.utexas.cryptos
 
+import android.content.Intent
 import android.util.Log
+import androidx.activity.result.ActivityResultLauncher
 import androidx.lifecycle.*
+import com.firebase.ui.auth.AuthUI
+import com.google.firebase.auth.FirebaseAuth
 import edu.utexas.cryptos.api.Api
 import edu.utexas.cryptos.firebase.Firebase
 import edu.utexas.cryptos.model.Asset
@@ -17,6 +21,35 @@ class MainViewModel() : ViewModel() {
     private val api = Api.create()
 
     //UserConfigs
+
+    fun login(signInLauncher: ActivityResultLauncher<Intent>) {
+
+        val user = FirebaseAuth.getInstance().currentUser
+        if(user == null) {
+            // Choose authentication providers
+            val providers = arrayListOf(
+                AuthUI.IdpConfig.EmailBuilder().build())
+
+            val signInIntent = AuthUI.getInstance()
+                .createSignInIntentBuilder()
+                .setAvailableProviders(providers)
+                .setIsSmartLockEnabled(false)
+                .build()
+            signInLauncher.launch(signInIntent)
+
+            // Create and launch sign-in intent
+            // XXX Write me. Set authentication providers and start sign-in for user
+            // setIsSmartLockEnabled(false) solves some problems
+        } else {
+            Log.d("LUKE", "XXX user ${user.displayName} email ${user.email}")
+            updateUser()
+            fetchAssets()
+        }
+    }
+
+    fun signOut() {
+        firebaseAuthLiveData.logout()
+    }
 
     private var userConfig = MutableLiveData<UserConfig>()
     fun updateUser() {
