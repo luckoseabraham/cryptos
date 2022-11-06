@@ -63,6 +63,13 @@ class AssetMetaAdapter(private val viewModel: MainViewModel, private val isFavor
                     viewModel.setFavorite(asset.id)
                 }
             }
+
+            holder.rowBinding.name.setOnClickListener{
+                MainViewModel.doDetails(itemView.context, asset)
+            }
+            holder.rowBinding.price.setOnClickListener{
+                MainViewModel.doDetails(itemView.context, asset)
+            }
         }
     }
 

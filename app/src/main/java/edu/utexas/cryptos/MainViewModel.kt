@@ -1,5 +1,6 @@
 package edu.utexas.cryptos
 
+import android.content.Context
 import android.content.Intent
 import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
@@ -165,5 +166,18 @@ class MainViewModel() : ViewModel() {
 
     fun observeSearchAssets() : LiveData<List<Asset>> {
         return searchAssets
+    }
+
+    //Details page
+
+    // Convenient place to put it as it is shared
+    companion object {
+        fun doDetails(context: Context, asset: Asset) {
+            //TODO - Come back here.
+            val intent = Intent(context, DetailsActivity::class.java)
+            intent.putExtra(DetailsActivity.titleKey, "${asset.id} - ${asset.name}")
+            intent.putExtra(DetailsActivity.descKey, asset.description)
+            context.startActivity(intent)
+        }
     }
 }
