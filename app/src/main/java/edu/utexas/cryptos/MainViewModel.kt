@@ -1,9 +1,7 @@
 package edu.utexas.cryptos
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import android.util.Log
+import androidx.lifecycle.*
 import edu.utexas.cryptos.api.Api
 import edu.utexas.cryptos.firebase.Firebase
 import edu.utexas.cryptos.model.Asset
@@ -37,6 +35,21 @@ class MainViewModel() : ViewModel() {
         firebase.setUserConfig(firebaseAuthLiveData.getCurrentUser()!!.email.toString(), tempUserConfig!!, userConfig)
     }
 
+    fun removeFavorite(id : String) {
+        var tempUserConfig = userConfig.value
+        var tempFavorites = tempUserConfig!!.favorites.toMutableList()
+        tempFavorites.remove(id)
+        tempUserConfig.favorites = tempFavorites
+        firebase.setUserConfig(firebaseAuthLiveData.getCurrentUser()!!.email.toString(), tempUserConfig!!, userConfig)
+    }
+
+    fun setFavorite(id : String) {
+        var tempUserConfig = userConfig.value
+        var tempFavorites = tempUserConfig!!.favorites.toMutableList()
+        tempFavorites.add(id)
+        tempUserConfig.favorites = tempFavorites
+        firebase.setUserConfig(firebaseAuthLiveData.getCurrentUser()!!.email.toString(), tempUserConfig!!, userConfig)
+    }
 
     //Assets
     private var assets = MutableLiveData<List<Asset>>()
@@ -44,11 +57,80 @@ class MainViewModel() : ViewModel() {
         viewModelScope.launch(
             context = viewModelScope.coroutineContext + Dispatchers.IO
         ) {
-            assets.postValue(api.getAssetList().assets)
+            val tempAssets = api.getAssetList().assets
+            assets.postValue(tempAssets)
+            if (userConfig.value?.favorites != null) {
+                Log.d("LUKE", "Updating favorite assets. ")
+                favoriteAssets.postValue(
+                    tempAssets.filter {
+                        val result = userConfig.value?.favorites!!.contains(it.id)
+                        Log.d("LUKE", "Inside fetchAsset favorite logic for ${it.id} amd ${userConfig.value?.favorites} : $result")
+                        result
+                    }
+                )
+            }
         }
     }
 
     fun observeAssets(): LiveData<List<Asset>> {
         return assets
+    }
+
+    fun getAssetAt(position: Int) : Asset {
+        return searchAssets.value?.get(position)!!
+    }
+
+    //Favorites
+    private var favoriteAssets = MutableLiveData<List<Asset>>()
+    fun observeFavoriteAssets(): LiveData<List<Asset>> {
+        return favoriteAssets
+    }
+
+    fun getFavoriteAt(position: Int) : Asset {
+        return searchFavorites.value?.get(position)!!
+    }
+
+    //Search
+    private var searchTerm = MutableLiveData<String>()
+    fun setSearchTerm(search: String) {
+        searchTerm.postValue(search)
+    }
+
+    private val searchFavorites = MediatorLiveData<List<Asset>>().apply {
+        addSource(favoriteAssets) { postList ->
+            value = postList.filter {
+                it.searchFor(searchTerm.value ?: "")
+            }
+        }
+        addSource(searchTerm) { searchTerm ->
+            value = favoriteAssets.value?.filter {
+                val blah = it.searchFor(searchTerm)
+                if(blah)
+                Log.d("LUKE", "filter result for input : $searchTerm in $it is $blah")
+                blah
+            }
+        }
+    }
+
+    fun observeSearchFavorites() : LiveData<List<Asset>> {
+        return searchFavorites
+    }
+
+
+    private val searchAssets = MediatorLiveData<List<Asset>>().apply {
+        addSource(assets) { postList ->
+            value = postList.filter {
+                it.searchFor(searchTerm.value ?: "")
+            }
+        }
+        addSource(searchTerm) { searchTerm ->
+            value = assets.value?.filter {
+                it.searchFor(searchTerm)
+            }
+        }
+    }
+
+    fun observeSearchAssets() : LiveData<List<Asset>> {
+        return searchAssets
     }
 }

@@ -31,7 +31,7 @@ class AuthInit(viewModel: MainViewModel, signInLauncher: ActivityResultLauncher<
             // XXX Write me. Set authentication providers and start sign-in for user
             // setIsSmartLockEnabled(false) solves some problems
         } else {
-            Log.d(TAG, "XXX user ${user.displayName} email ${user.email}")
+            Log.d("LUKE", "XXX user ${user.displayName} email ${user.email}")
             viewModel.updateUser()
             viewModel.fetchAssets()
         }

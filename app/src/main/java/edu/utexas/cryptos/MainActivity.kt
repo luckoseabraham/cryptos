@@ -1,22 +1,33 @@
 package edu.utexas.cryptos
 
-import android.R
 import android.app.Activity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.material.navigation.NavigationBarView
+import androidx.core.widget.doOnTextChanged
+import androidx.fragment.app.FragmentTransaction
+import androidx.fragment.app.add
+import androidx.fragment.app.commit
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.tabs.TabLayout
+import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
+import edu.utexas.cryptos.adapter.AssetMetaAdapter
 import edu.utexas.cryptos.databinding.ActivityMainBinding
+import edu.utexas.cryptos.fragment.AllAssetsFragment
+import edu.utexas.cryptos.fragment.FavoriteFragment
 import edu.utexas.cryptos.model.Currency
-import kotlinx.coroutines.*
-import java.security.AccessController.getContext
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 
 
 class MainActivity : AppCompatActivity() {
@@ -52,14 +63,8 @@ class MainActivity : AppCompatActivity() {
 
         GlobalScope.launch {
             while (coroutineContext.isActive) {
-                delay(2000L)
+                delay(10000L)
                 viewModel.fetchAssets()
-            }
-        }
-
-        viewModel.observeAssets().observe(this){ data ->
-            data.forEach {
-                Log.d("LUKE", "Got asset : $it.id")
             }
         }
 
@@ -68,14 +73,15 @@ class MainActivity : AppCompatActivity() {
             spinnerArray.add(it.name)
         }
         val adapter = ArrayAdapter(
-            this, R.layout.simple_spinner_item, spinnerArray
+            this, android.R.layout.simple_spinner_item, spinnerArray
         )
-        adapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         val spinner : Spinner = binding.contentMain.currency
         spinner.adapter = adapter
 
         viewModel.observeUserConfig().observe(this) {
             spinner.setSelection(adapter.getPosition(it.currency))
+            viewModel.fetchAssets()
         }
         spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
             override fun onNothingSelected(parent: AdapterView<*>?) {
@@ -92,6 +98,48 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+
+
+        // No back stack for home
+        if (savedInstanceState == null) {
+            supportFragmentManager.commit {
+                add(R.id.main_frame, FavoriteFragment.newInstance(), "mainFragTag")
+                setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+            }
+        }
+
+        binding.contentMain.tabLayout.addOnTabSelectedListener(
+            object : OnTabSelectedListener {
+                override fun onTabSelected(tab: TabLayout.Tab) {
+                    //do stuff here
+//                    tab.position
+                    Log.d("LUKE", "Tab selected is ${tab.position}",)
+                    if(tab.position == 0 ) {
+//                        //select favorites fragment.
+                            supportFragmentManager.commit {
+                                replace(R.id.main_frame, FavoriteFragment.newInstance(), "mainFragTag")
+                                setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                            }
+                    } else {
+                        //select all assets fragment.
+                        supportFragmentManager.commit {
+                            replace(R.id.main_frame, AllAssetsFragment.newInstance(), "mainFragTag")
+                            setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                        }
+                    }
+                }
+
+                override fun onTabUnselected(tab: TabLayout.Tab) {}
+                override fun onTabReselected(tab: TabLayout.Tab) {}
+            }
+        )
+
+
+        binding.contentMain.search.doOnTextChanged { text, _, _, _ ->
+            if (text!!.isEmpty()) hideKeyboard()
+            viewModel.setSearchTerm(text.toString())
+        }
+
 
 //        val chart = binding.chart
 //
@@ -125,5 +173,10 @@ class MainActivity : AppCompatActivity() {
 //        val lineData = LineData(dataSet)
 //        chart.data = lineData
 //        chart.invalidate() // refresh
+    }
+
+    fun hideKeyboard() {
+        val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(window.decorView.rootView.windowToken, 0)
     }
 }

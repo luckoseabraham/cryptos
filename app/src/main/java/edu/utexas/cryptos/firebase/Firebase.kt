@@ -21,7 +21,10 @@ class Firebase {
                 } else {
                     Log.d("Firebase", "No such document")
                     //Create initial record for the user.
-                    val userConfig = UserConfig()
+                    val userConfig = UserConfig(
+                        "USD",
+                        listOf("USDT", "BTC", "BUSD")
+                    )
                     this.setUserConfig(userName, userConfig, userConfigLiveData)
                 }
             }

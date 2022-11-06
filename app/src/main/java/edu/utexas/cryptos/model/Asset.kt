@@ -65,7 +65,21 @@ data class Asset(
     val created_at: String,
     @SerializedName("updated_at")
     val updated_at: String,
-)
+) {
+    companion object {
+        private fun find(fulltext: String, subtext: String): Boolean {
+            if (subtext.isEmpty()) return true
+            val i = fulltext.indexOf(subtext, ignoreCase = true)
+            if (i == -1) return false
+            return true
+        }
+    }
+
+    fun searchFor(searchTerm: String): Boolean {
+        val text = "$id - $name"
+        return find(text, searchTerm)
+    }
+}
 
 data class Assets(
     @SerializedName("assets")

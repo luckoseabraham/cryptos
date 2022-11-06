@@ -7,7 +7,9 @@
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context=".MainActivity"
-    tools:showIn="@layout/activity_main">
+    >
+<!--    tools:showIn="@layout/activity_main"-->
+
 
     <Spinner
         android:id="@+id/currency"
@@ -19,5 +21,46 @@
         android:popupBackground="@drawable/gradient_spinner"
         android:gravity="center"
         />
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/currency"
+        android:id="@+id/search"
+        android:layout_margin="10dp"
+        />
+
+    <com.google.android.material.tabs.TabLayout
+        android:layout_margin="10dp"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        app:layout_constraintTop_toBottomOf="@+id/search"
+        android:id="@+id/tabLayout">
+
+        <com.google.android.material.tabs.TabItem
+            android:text="Favorites"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            />
+
+        <com.google.android.material.tabs.TabItem
+            android:text="All Assets"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            />
+
+    </com.google.android.material.tabs.TabLayout>
+
+    <androidx.fragment.app.FragmentContainerView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/main_frame"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tabLayout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        />
+
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
