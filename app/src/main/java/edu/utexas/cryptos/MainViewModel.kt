@@ -176,7 +176,7 @@ class MainViewModel() : ViewModel() {
             //TODO - Come back here.
             val intent = Intent(context, DetailsActivity::class.java)
             intent.putExtra(DetailsActivity.titleKey, "${asset.id} - ${asset.name}")
-            intent.putExtra(DetailsActivity.descKey, asset.description)
+            intent.putExtra(DetailsActivity.idKey, asset.id)
             context.startActivity(intent)
         }
     }

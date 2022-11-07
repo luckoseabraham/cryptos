@@ -3,6 +3,7 @@ package edu.utexas.cryptos.api
 import com.google.gson.GsonBuilder
 import edu.utexas.cryptos.model.Asset
 import edu.utexas.cryptos.model.Assets
+import edu.utexas.cryptos.model.DetailAsset
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -14,7 +15,7 @@ import retrofit2.http.Path
 interface Api {
 
     @GET("/api/assets/{asset}")
-    suspend fun getAssetDetails(@Path("asset") id: String): Asset
+    suspend fun getAssetDetails(@Path("asset") id: String): DetailAsset
 
     @GET("/api/assets?size=50")
     suspend fun getAssetList(): Assets

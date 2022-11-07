@@ -155,38 +155,6 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-//        val chart = binding.chart
-//
-//        var entries = mutableListOf<Entry>()
-//        entries.add(Entry(1990.toFloat(), 20.toFloat()))
-//        entries.add(Entry(1991.toFloat(), 30.toFloat()))
-//        entries.add(Entry(1992.toFloat(), 40.toFloat()))
-//        entries.add(Entry(1993.toFloat(), 40.toFloat()))
-//        entries.add(Entry(1994.toFloat(), 30.toFloat()))
-//        entries.add(Entry(1995.toFloat(), 40.toFloat()))
-//        entries.add(Entry(1996.toFloat(), 20.toFloat()))
-//        entries.add(Entry(1997.toFloat(), 40.toFloat()))
-//        entries.add(Entry(1998.toFloat(), 40.toFloat()))
-//        entries.add(Entry(1999.toFloat(), 10.toFloat()))
-//        entries.add(Entry(2000.toFloat(), 40.toFloat()))
-//        entries.add(Entry(2001.toFloat(), 5.toFloat()))
-//        entries.add(Entry(2002.toFloat(), 40.toFloat()))
-//        entries.add(Entry(2003.toFloat(), 40.toFloat()))
-//        entries.add(Entry(2004.toFloat(), 40.toFloat()))
-//        entries.add(Entry(2005.toFloat(), 40.toFloat()))
-//        entries.add(Entry(2006.toFloat(), 40.toFloat()))
-//        entries.add(Entry(2007.toFloat(), 40.toFloat()))
-//
-//
-//
-//        val dataSet = LineDataSet(entries, "Label")
-//        dataSet.cubicIntensity = 0.2f
-//        dataSet.mode = LineDataSet.Mode.HORIZONTAL_BEZIER
-//        dataSet.lineWidth = 1.8f
-//        dataSet.circleRadius = 4f
-//        val lineData = LineData(dataSet)
-//        chart.data = lineData
-//        chart.invalidate() // refresh
     }
 
     fun hideKeyboard() {

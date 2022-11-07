@@ -85,3 +85,8 @@ data class Assets(
     @SerializedName("assets")
     val assets: List<Asset>
 )
+
+data class DetailAsset(
+    @SerializedName("asset")
+    val asset: Asset
+)
