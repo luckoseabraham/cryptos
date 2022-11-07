@@ -1,6 +1,5 @@
 TODO
 
-Details page
-graph
+graph color update based on change.
 data
 

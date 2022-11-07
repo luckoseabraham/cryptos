@@ -108,7 +108,6 @@ class MainActivity : AppCompatActivity() {
                     //update currency in firebase
                     Log.d("LUKE", "inside if condition. $curr")
                     viewModel.updateCurrencyPref(curr!!)
-                    //TODO also refresh the prices in the views. But probably inside the fragments.
                 }
             }
         }

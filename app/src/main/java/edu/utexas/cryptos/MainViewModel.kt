@@ -172,11 +172,11 @@ class MainViewModel() : ViewModel() {
 
     // Convenient place to put it as it is shared
     companion object {
-        fun doDetails(context: Context, asset: Asset) {
-            //TODO - Come back here.
+        fun doDetails(context: Context, asset: Asset, curr: String) {
             val intent = Intent(context, DetailsActivity::class.java)
             intent.putExtra(DetailsActivity.titleKey, "${asset.id} - ${asset.name}")
             intent.putExtra(DetailsActivity.idKey, asset.id)
+            intent.putExtra(DetailsActivity.currKey, curr)
             context.startActivity(intent)
         }
     }

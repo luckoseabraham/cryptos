@@ -44,11 +44,11 @@ class AssetMetaAdapter(private val viewModel: MainViewModel, private val isFavor
             }
             holder.rowBinding.name.text = asset.id + " - " + asset.name
 
+            val curr = viewModel.observeUserConfig().value?.currency!!
             var price = asset.price.toFloat()
             if(viewModel.observeUserConfig().value?.currency != null ) {
                 Log.d("LUKE", "Obtained currency update.")
-                val curr = viewModel.observeUserConfig().value?.currency!!
-                price = asset.quote.get(Currency.valueOf(curr))?.price?.toFloat()!!
+                price = asset.quote[Currency.valueOf(curr)]?.price!!
             }
             holder.rowBinding.price.text = String.format("%.5f", price)
             Log.d("LUKE", "Bind invoked for asset id ${asset.id}")
@@ -65,10 +65,10 @@ class AssetMetaAdapter(private val viewModel: MainViewModel, private val isFavor
             }
 
             holder.rowBinding.name.setOnClickListener{
-                MainViewModel.doDetails(itemView.context, asset)
+                MainViewModel.doDetails(itemView.context, asset, curr)
             }
             holder.rowBinding.price.setOnClickListener{
-                MainViewModel.doDetails(itemView.context, asset)
+                MainViewModel.doDetails(itemView.context, asset, curr)
             }
         }
     }

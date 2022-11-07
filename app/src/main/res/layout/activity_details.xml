@@ -22,15 +22,71 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
+    <com.google.android.material.tabs.TabLayout
+        android:layout_margin="10dp"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        app:layout_constraintTop_toBottomOf="@+id/search"
+        android:id="@+id/timeButtons">
+
+        <com.google.android.material.tabs.TabItem
+            android:text="1 Hour"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            />
+
+        <com.google.android.material.tabs.TabItem
+            android:text="24 Hours"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            />
+        <com.google.android.material.tabs.TabItem
+            android:text="7 Days"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            />
+
+    </com.google.android.material.tabs.TabLayout>
 
 
         <com.github.mikephil.charting.charts.LineChart
             android:id="@+id/chart"
             android:layout_width="match_parent"
-            android:layout_height="200dp"
+            android:layout_height="250dp"
             android:padding="5dp"
             android:layout_marginTop="10dp"
+            android:layout_marginBottom="20dp"
             />
+
+
+    <!--    Price Section -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@drawable/rounded_corner"
+        android:layout_marginTop="20dp"
+        android:layout_margin="5dp"
+        android:padding="10dp"
+        >
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_weight="0.4"
+            android:gravity="left"
+            android:layout_height="wrap_content"
+            android:text="Current Price : "
+            android:textStyle="bold"
+            />
+        <TextView
+            android:layout_width="0dp"
+            android:layout_weight="0.4"
+            android:gravity="right"
+            android:layout_height="wrap_content"
+            android:id="@+id/currentPrice"
+            />
+
+    </LinearLayout>
 
 <!--    Change section-->
         <TextView
@@ -63,7 +119,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center"
-                    android:text="1 HR"
+                    android:text="1 Hour"
                     android:textStyle="bold"
 
                     />
@@ -89,7 +145,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center"
-                    android:text="24 HR"
+                    android:text="24 Hours"
                     android:textStyle="bold" />
 
                 <TextView
@@ -113,7 +169,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center"
-                    android:text="7 Day"
+                    android:text="7 Days"
                     android:textStyle="bold" />
 
                 <TextView
@@ -184,12 +240,4 @@
 
     </LinearLayout>
 
-    <TextView
-        android:layout_margin="5dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/desc"
-        android:background="@drawable/rounded_corner"
-        />
-
-    </LinearLayout>
+</LinearLayout>

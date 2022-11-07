@@ -9,6 +9,7 @@ import edu.utexas.cryptos.api.Api
 import edu.utexas.cryptos.firebase.Firebase
 import edu.utexas.cryptos.model.Asset
 import edu.utexas.cryptos.model.DetailAsset
+import edu.utexas.cryptos.model.TimeSeriesData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -33,6 +34,18 @@ class DetailsViewModel() : ViewModel() {
             val tempAsset = api.getAssetDetails(id)
             asset.postValue(tempAsset)
         }
+    }
+
+    //TimeSeries
+
+    private var timeSeries = MutableLiveData<TimeSeriesData>()
+
+    fun observeTimeSeries() : LiveData<TimeSeriesData> {
+        return timeSeries
+    }
+
+    fun fetchTimeSeries(id: String, currency: String, timeWindow: String) {
+        firebase.getTimeSeriesData(id, currency, timeWindow, timeSeries)
     }
 
 }
