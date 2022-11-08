@@ -50,7 +50,7 @@ class AssetMetaAdapter(private val viewModel: MainViewModel, private val isFavor
                 Log.d("LUKE", "Obtained currency update.")
                 price = asset.quote[Currency.valueOf(curr)]?.price!!
             }
-            holder.rowBinding.price.text = String.format("%.5f", price)
+            holder.rowBinding.price.text = Asset.currencyIconMap[Currency.valueOf(curr)] + String.format("%.5f", price)
             Log.d("LUKE", "Bind invoked for asset id ${asset.id}")
             if(viewModel.observeUserConfig().value?.favorites != null && viewModel.observeUserConfig().value?.favorites!!.contains(asset.id)){
                 holder.rowBinding.actionBut.setImageResource(R.drawable.ic_delete)

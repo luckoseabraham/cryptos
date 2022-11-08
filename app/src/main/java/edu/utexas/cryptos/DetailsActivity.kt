@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
 import androidx.activity.viewModels
+import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.github.mikephil.charting.components.XAxis
@@ -22,10 +23,16 @@ import com.github.mikephil.charting.utils.ViewPortHandler
 import com.google.android.material.tabs.TabLayout
 import edu.utexas.cryptos.databinding.ActivityDetailsBinding
 import edu.utexas.cryptos.misc.CustomMarkerView
+import edu.utexas.cryptos.model.Asset
 import edu.utexas.cryptos.model.Currency
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
+import kotlin.collections.HashMap
 
 
 class DetailsActivity : AppCompatActivity() {
@@ -58,39 +65,42 @@ class DetailsActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         viewModel.fetchAsset(id)
-
+        var colorMap = HashMap<String, Int>()
         viewModel.observeAsset().observe(this){
             Log.d("LUKE", "got asset for details from observe $it")
 //            binding.desc.text = it.asset.description
             val change_1h = it.asset.change_1h.toFloat()
-            binding.oneHour.text = String.format("%.2f", change_1h)
-            if(change_1h<0) {
-                binding.oneHour.setTextColor(Color.RED)
+            binding.oneHour.text = String.format("%.2f", change_1h)  + "%"
+            if(change_1h<=0) {
+                colorMap[time_1hr] = Color.RED
             } else  {
-                binding.oneHour.setTextColor(Color.GREEN)
+                colorMap[time_1hr] =Color.GREEN
             }
+            binding.oneHour.setTextColor(colorMap[time_1hr]!!)
 
             val change_24h = it.asset.change_24h.toFloat()
-            binding.oneDay.text = String.format("%.2f", change_24h)
-            if(change_24h<0) {
-                binding.oneDay.setTextColor(Color.RED)
+            binding.oneDay.text = String.format("%.2f", change_24h)  + "%"
+            if(change_24h<=0) {
+                colorMap[time_24hr] = Color.RED
             } else  {
-                binding.oneDay.setTextColor(Color.GREEN)
+                colorMap[time_24hr] =Color.GREEN
             }
+            binding.oneDay.setTextColor(colorMap[time_24hr]!!)
 
             val change_7d = it.asset.change_7d.toFloat()
-            binding.sevenDay.text = String.format("%.2f", change_7d)
-            if(change_7d<0) {
-                binding.sevenDay.setTextColor(Color.RED)
+            binding.sevenDay.text = String.format("%.2f", change_7d) + "%"
+            if(change_7d<=0) {
+                colorMap[time_7d] = Color.RED
             } else  {
-                binding.sevenDay.setTextColor(Color.GREEN)
+                colorMap[time_7d] =Color.GREEN
             }
+            binding.sevenDay.setTextColor(colorMap[time_7d]!!)
 
             val price = it.asset.quote[Currency.valueOf(curr)]?.price!!
-            binding.currentPrice.text = String.format("%.5f", price)
+            binding.currentPrice.text = Asset.currencyIconMap[Currency.valueOf(curr)] + String.format("%.5f", price)
 
 
-            binding.marketCap.text = String.format("%.3f", it.asset.quote[Currency.valueOf(curr)]?.market_cap)
+            binding.marketCap.text = Asset.currencyIconMap[Currency.valueOf(curr)] + String.format("%.3f", it.asset.quote[Currency.valueOf(curr)]?.market_cap)
             binding.circSupply.text = it.asset.circulating_supply
 
         }
@@ -104,9 +114,11 @@ class DetailsActivity : AppCompatActivity() {
         chart.setTouchEnabled(true);
 
         viewModel.fetchTimeSeries(id,curr, time_1hr)
+
+
         viewModel.observeTimeSeries().observe(this) {
             var values = createEntry(it.data, it.window)
-            var dataSet = createDataSet(values, id)
+            var dataSet = createDataSet(values, id, colorMap.getOrDefault(it.window, Color.RED))
             val lineData = LineData(dataSet)
             chart.data = lineData
             chart.legend.isEnabled = false
@@ -184,6 +196,7 @@ class DetailsActivity : AppCompatActivity() {
 
 
 
+        var window = time_1hr
 
         binding.timeButtons.addOnTabSelectedListener(
             object : TabLayout.OnTabSelectedListener {
@@ -194,16 +207,18 @@ class DetailsActivity : AppCompatActivity() {
                         0 -> {
                             //1hour
                           viewModel.fetchTimeSeries(id,curr,time_1hr)
-
+                            window = time_1hr
                         }
                         1 -> {
                             //24 hour
                             viewModel.fetchTimeSeries(id,curr,time_24hr)
+                            window = time_24hr
 
                         }
                         else -> {
                             //7 days
-                            viewModel.fetchTimeSeries(id,curr,time_7d)
+                            viewModel.fetchTimeSeries(id,curr,time_24hr)
+                            window = time_24hr
                         }
                     }
                 }
@@ -212,6 +227,13 @@ class DetailsActivity : AppCompatActivity() {
                 override fun onTabReselected(tab: TabLayout.Tab) {}
             }
         )
+        GlobalScope.launch {
+            while (coroutineContext.isActive) {
+                delay(10000L)
+                viewModel.fetchTimeSeries(id,curr, window)
+                viewModel.fetchAsset(id)
+            }
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -229,17 +251,17 @@ class DetailsActivity : AppCompatActivity() {
         } else super.onOptionsItemSelected(item)
     }
 
-    fun createDataSet(entries: List<Entry>, id: String) : LineDataSet{
+    fun createDataSet(entries: List<Entry>, id: String, color: Int) : LineDataSet{
 
         val dataSet = LineDataSet(entries, id)
         dataSet.cubicIntensity = 0.2f
         dataSet.mode = LineDataSet.Mode.HORIZONTAL_BEZIER
         dataSet.lineWidth = 1.8f
         dataSet.circleRadius = 4f
-        dataSet.color = Color.RED;
-        dataSet.setCircleColor(Color.RED);
-        dataSet.highLightColor = Color.RED;
-        dataSet.fillColor = Color.RED;
+        dataSet.color = color;
+        dataSet.setCircleColor(color);
+        dataSet.highLightColor = color;
+        dataSet.fillColor = color;
         dataSet.fillAlpha = 110;
         // set the filled area
         dataSet.setDrawFilled(true)
@@ -248,10 +270,14 @@ class DetailsActivity : AppCompatActivity() {
         // set color of filled area
         if (Utils.getSDKInt() >= 18) {
             // drawables only supported on api level 18 and above
-            val drawable = ContextCompat.getDrawable(this, R.drawable.fade_red)
+            var drawableColor = R.drawable.fade_red
+            if(color == Color.GREEN) {
+                drawableColor = R.drawable.fade_green
+            }
+            val drawable = ContextCompat.getDrawable(this, drawableColor)
             dataSet.fillDrawable = drawable
         } else {
-            dataSet.fillColor = Color.RED
+            dataSet.fillColor = color
         }
         return dataSet
     }

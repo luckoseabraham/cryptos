@@ -73,6 +73,26 @@ data class Asset(
             if (i == -1) return false
             return true
         }
+
+        /**
+         *     AUD,
+        JPY,
+        NZD,
+        GBP,
+        CAD,
+        USD,
+        EUR
+         */
+
+        public val currencyIconMap = hashMapOf<Currency, String>(
+            Currency.AUD to "$",
+            Currency.JPY to "¥",
+            Currency.NZD to "$",
+            Currency.GBP to "£",
+            Currency.CAD to "$",
+            Currency.USD to "$",
+            Currency.EUR to "€"
+        )
     }
 
     fun searchFor(searchTerm: String): Boolean {
