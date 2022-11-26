@@ -5,9 +5,11 @@ import androidx.lifecycle.MutableLiveData
 import com.firebase.ui.auth.data.model.User
 import com.github.mikephil.charting.data.Entry
 import com.google.firebase.firestore.FirebaseFirestore
+import edu.utexas.cryptos.DetailsActivity
 import edu.utexas.cryptos.model.TimeSeriesData
 import edu.utexas.cryptos.model.UserConfig
 import java.util.ArrayList
+import java.util.concurrent.TimeUnit
 
 class Firebase {
 
@@ -51,21 +53,28 @@ class Firebase {
     fun getTimeSeriesData(id : String, currency: String, timeSeries : String, data: MutableLiveData<TimeSeriesData>) {
 
         val pk = "${id}::${currency}::${timeSeries}"
-        db.collection(timeSeriesCollection).document(pk.lowercase())
+        db.collection(timeSeriesCollection).document(pk)
             .get()
             .addOnSuccessListener { document ->
                 if (document.data != null) {
                     Log.d("Firebase", "DocumentSnapshot data: ${document.data}")
                     data.postValue(document.toObject(TimeSeriesData::class.java)!!)
                 } else {
-                    Log.d("Firebase", "No such document")
+                    Log.d("Firebase", "No such document : $pk")
 
                     val count=30 // This seems to be a really good sweet spot between data frequency and UI
                     val range=180
-                    var values = ArrayList<Float>()
+                    var values = mutableMapOf<String, Float>()
+                    var now  = TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis())
                     for (i in 0 until count) {
+                        var test = (now-2*(count - i))
+                        if(timeSeries == DetailsActivity.time_24hr) {
+                            test = (now-48*(count - i))
+                        } else if (timeSeries == DetailsActivity.time_7d) {
+                            test = (now-336*(count - i))
+                        }
                         val temp = (Math.random() * range).toFloat() + 30
-                        values.add(temp)
+                        values[test.toString()] = temp
                     }
                     data.postValue(TimeSeriesData(currency,id,timeSeries,values))
                 }

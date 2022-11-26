@@ -147,8 +147,8 @@ class DetailsActivity : AppCompatActivity() {
         xAxis.valueFormatter = object : ValueFormatter() {
             private val mFormat = SimpleDateFormat("HH:mm  \n dd MMM", Locale.ENGLISH)
             override fun getFormattedValue(value: Float): String {
-                val millis = TimeUnit.MINUTES.toMillis(value.toLong())
-                Log.d("Timeblah"," formatted value is ${mFormat.format(Date(millis))}")
+                var millis = value.toLong()
+                Log.d("Timeformatingraph"," formatted value from $value is ${mFormat.format(Date(millis))}")
                 return mFormat.format(Date(millis))
             }
         }
@@ -255,7 +255,8 @@ class DetailsActivity : AppCompatActivity() {
 
         val dataSet = LineDataSet(entries, id)
         dataSet.cubicIntensity = 0.2f
-        dataSet.mode = LineDataSet.Mode.HORIZONTAL_BEZIER
+        dataSet.mode = LineDataSet.Mode.CUBIC_BEZIER
+//        dataSet.mode = LineDataSet.Mode.HORIZONTAL_BEZIER
         dataSet.lineWidth = 1.8f
         dataSet.circleRadius = 4f
         dataSet.color = color;
@@ -282,25 +283,15 @@ class DetailsActivity : AppCompatActivity() {
         return dataSet
     }
 
-    private fun createEntry(yValues: List<Float>, timeWindow: String) : ArrayList<Entry> {
+    private fun createEntry(yValues: Map<String, Float>, timeWindow: String) : ArrayList<Entry> {
         var entryValues = ArrayList<Entry>()
-        var now  = TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis())
-
-        for (i  in yValues.indices) {
-            var test = (now-2*(yValues.size - i))
-            if(timeWindow == time_24hr) {
-                test = (now-48*(yValues.size - i))
-            } else if (timeWindow == time_7d) {
-                test = (now-336*(yValues.size - i))
-            }
-            Log.d("Timeblah", "Recod $i is ${test}")
-            val mFormat = SimpleDateFormat("HH:mm", Locale.ENGLISH)
-            val millis = TimeUnit.MINUTES.toMillis(test.toLong())
-            Log.d("Timeblah"," formatted value is ${mFormat.format(Date(millis))}")
-            entryValues.add(i, Entry(
-                test
-                .toFloat(), yValues[i]))
+        var sortedValues = yValues.toSortedMap()
+        var count = 0
+        for (i  in sortedValues.entries) {
+            entryValues.add(count, Entry(i.key.toFloat(), i.value))
+            count += 1
         }
+        Log.d("Timeformatingraph", "Tab selected is ${entryValues}")
         return entryValues
     }
 

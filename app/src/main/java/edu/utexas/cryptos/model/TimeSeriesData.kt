@@ -15,5 +15,5 @@ data class TimeSeriesData(
     var currency: String = "USD",
     var id: String = "BTC",
     var window: String = DetailsActivity.time_1hr,
-    var data: List<Float> = mutableListOf(),
+    var data: Map<String, Float> = mutableMapOf(),
 )
