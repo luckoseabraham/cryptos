@@ -14,7 +14,7 @@ import edu.utexas.cryptos.model.UserConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class MainViewModel() : ViewModel() {
+class MainViewModel : ViewModel() {
 
 
     private var firebase = Firebase()
@@ -42,7 +42,6 @@ class MainViewModel() : ViewModel() {
             // XXX Write me. Set authentication providers and start sign-in for user
             // setIsSmartLockEnabled(false) solves some problems
         } else {
-            Log.d("LUKE", "XXX user ${user.displayName} email ${user.email}")
             updateUser()
             fetchAssets()
         }
@@ -64,25 +63,25 @@ class MainViewModel() : ViewModel() {
     }
 
     fun updateCurrencyPref(currency: String) {
-        var tempUserConfig = userConfig.value
+        val tempUserConfig = userConfig.value
         tempUserConfig?.currency = currency
         firebase.setUserConfig(firebaseAuthLiveData.getCurrentUser()!!.email.toString(), tempUserConfig!!, userConfig)
     }
 
     fun removeFavorite(id : String) {
-        var tempUserConfig = userConfig.value
-        var tempFavorites = tempUserConfig!!.favorites.toMutableList()
+        val tempUserConfig = userConfig.value
+        val tempFavorites = tempUserConfig!!.favorites.toMutableList()
         tempFavorites.remove(id)
         tempUserConfig.favorites = tempFavorites
-        firebase.setUserConfig(firebaseAuthLiveData.getCurrentUser()!!.email.toString(), tempUserConfig!!, userConfig)
+        firebase.setUserConfig(firebaseAuthLiveData.getCurrentUser()!!.email.toString(), tempUserConfig, userConfig)
     }
 
     fun setFavorite(id : String) {
-        var tempUserConfig = userConfig.value
-        var tempFavorites = tempUserConfig!!.favorites.toMutableList()
+        val tempUserConfig = userConfig.value
+        val tempFavorites = tempUserConfig!!.favorites.toMutableList()
         tempFavorites.add(id)
         tempUserConfig.favorites = tempFavorites
-        firebase.setUserConfig(firebaseAuthLiveData.getCurrentUser()!!.email.toString(), tempUserConfig!!, userConfig)
+        firebase.setUserConfig(firebaseAuthLiveData.getCurrentUser()!!.email.toString(), tempUserConfig, userConfig)
     }
 
     //Assets
@@ -94,11 +93,9 @@ class MainViewModel() : ViewModel() {
             val tempAssets = api.getAssetList().assets
             assets.postValue(tempAssets)
             if (userConfig.value?.favorites != null) {
-                Log.d("LUKE", "Updating favorite assets. ")
                 favoriteAssets.postValue(
                     tempAssets.filter {
                         val result = userConfig.value?.favorites!!.contains(it.id)
-                        Log.d("LUKE", "Inside fetchAsset favorite logic for ${it.id} amd ${userConfig.value?.favorites} : $result")
                         result
                     }
                 )
@@ -106,12 +103,8 @@ class MainViewModel() : ViewModel() {
         }
     }
 
-    fun observeAssets(): LiveData<List<Asset>> {
-        return assets
-    }
-
-    fun getAssetAt(position: Int) : Asset {
-        return searchAssets.value?.get(position)!!
+    fun getAssetAt(position: Int) : Asset? {
+        return searchAssets.value?.getOrNull(position)
     }
 
     //Favorites
@@ -130,6 +123,10 @@ class MainViewModel() : ViewModel() {
         searchTerm.postValue(search)
     }
 
+    fun getSearchTerm() : String{
+        return searchTerm.value ?: ""
+    }
+
     private val searchFavorites = MediatorLiveData<List<Asset>>().apply {
         addSource(favoriteAssets) { postList ->
             value = postList.filter {
@@ -138,10 +135,7 @@ class MainViewModel() : ViewModel() {
         }
         addSource(searchTerm) { searchTerm ->
             value = favoriteAssets.value?.filter {
-                val blah = it.searchFor(searchTerm)
-                if(blah)
-                Log.d("LUKE", "filter result for input : $searchTerm in $it is $blah")
-                blah
+                it.searchFor(searchTerm)
             }
         }
     }

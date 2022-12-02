@@ -7,13 +7,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import edu.utexas.cryptos.api.Api
 import edu.utexas.cryptos.firebase.Firebase
-import edu.utexas.cryptos.model.Asset
 import edu.utexas.cryptos.model.DetailAsset
 import edu.utexas.cryptos.model.TimeSeriesData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class DetailsViewModel() : ViewModel() {
+class DetailsViewModel : ViewModel() {
 
     private var firebase = Firebase()
     private val api = Api.create()

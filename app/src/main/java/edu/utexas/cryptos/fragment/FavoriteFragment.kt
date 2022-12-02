@@ -1,15 +1,14 @@
 package edu.utexas.cryptos.fragment
 
-import android.R.attr.data
 import android.os.Bundle
-import android.util.Log
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import edu.utexas.cryptos.MainViewModel
-import edu.utexas.cryptos.R
 import edu.utexas.cryptos.adapter.AssetMetaAdapter
 import edu.utexas.cryptos.databinding.FragmentRvBinding
 
@@ -38,18 +37,12 @@ class FavoriteFragment : Fragment() {
         _binding = FragmentRvBinding.inflate( inflater, container, false)
 
         return binding.root
-//        return inflater.inflate(R.layout.fragment_rv, container, false);
-//        _binding = FragmentRvBinding.inflate(inflater,container,true)
-//        return binding.root
+
     }
 
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        Log.d(javaClass.simpleName, "onViewCreated")
-        // XXX Write me
-        // Setting itemAnimator = null on your recycler view might get rid of an annoying
-        // flicker
 
         val rv = binding.assetListRV
         rv.itemAnimator = null
@@ -58,24 +51,15 @@ class FavoriteFragment : Fragment() {
         val itemDecor = DividerItemDecoration(rv.context, LinearLayoutManager.VERTICAL)
         rv.addItemDecoration(itemDecor)
         rv.layoutManager = LinearLayoutManager(binding.root.context)
-//        viewModel.observeFavoriteAssets().observe(viewLifecycleOwner) {
-//            rvAdapter.submitList(it)
-//        }
+
 
         viewModel.observeSearchFavorites().observe(viewLifecycleOwner) {
-            Log.d("LUKE", "Got search favorites update ${it}")
             rvAdapter.submitList(it)
         }
         viewModel.observeUserConfig().observe(viewLifecycleOwner) {
             rvAdapter.notifyDataSetChanged()
         }
         // Add to menu
-    }
-
-    override fun onDestroyView() {
-        // XXX Write me
-        // Don't let back to home button stay when we exit favorites
-        super.onDestroyView()
     }
 
 }

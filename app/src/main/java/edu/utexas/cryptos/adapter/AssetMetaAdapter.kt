@@ -35,23 +35,23 @@ class AssetMetaAdapter(private val viewModel: MainViewModel, private val isFavor
         RecyclerView.ViewHolder(rowBinding.root) {
 
         fun bind(holder: VH, position: Int) {
-            Log.d("LUKE", "Bind invoked for asset id ${position}")
             var asset : Asset
             if(isFavorite){
                 asset = viewModel.getFavoriteAt(position)
             } else {
-                asset = viewModel.getAssetAt(position)
+                if (viewModel.getAssetAt(position) == null) {
+                    return
+                }
+                asset = viewModel.getAssetAt(position)!!
             }
             holder.rowBinding.name.text = asset.id + " - " + asset.name
 
             val curr = viewModel.observeUserConfig().value?.currency!!
             var price = asset.price.toFloat()
             if(viewModel.observeUserConfig().value?.currency != null ) {
-                Log.d("LUKE", "Obtained currency update.")
                 price = asset.quote[Currency.valueOf(curr)]?.price!!
             }
             holder.rowBinding.price.text = Asset.currencyIconMap[Currency.valueOf(curr)] + String.format("%.5f", price)
-            Log.d("LUKE", "Bind invoked for asset id ${asset.id}")
             if(viewModel.observeUserConfig().value?.favorites != null && viewModel.observeUserConfig().value?.favorites!!.contains(asset.id)){
                 holder.rowBinding.actionBut.setImageResource(R.drawable.ic_delete)
                 holder.rowBinding.actionBut.setOnClickListener{

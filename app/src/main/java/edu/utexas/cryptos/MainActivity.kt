@@ -34,7 +34,6 @@ class MainActivity : AppCompatActivity() {
     private val signInLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
-            Log.d("MainActivity", "sign in successful")
             viewModel.updateUser()
             viewModel.fetchAssets()
             //Check if the user has config record.
@@ -46,7 +45,7 @@ class MainActivity : AppCompatActivity() {
             // sign-in flow using the back button. Otherwise check
             // response.getError().getErrorCode() and handle the error.
             // ...
-            Log.d("MainActivity", "sign in failed ${result}")
+            Log.d("MainActivity", "sign in failed $result")
         }
     }
 
@@ -77,7 +76,7 @@ class MainActivity : AppCompatActivity() {
 
         GlobalScope.launch {
             while (coroutineContext.isActive) {
-                delay(10000L)
+                delay(2000L)
                 viewModel.fetchAssets()
             }
         }
@@ -103,10 +102,8 @@ class MainActivity : AppCompatActivity() {
             }
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 val curr = adapter.getItem(position)
-                Log.d("LUKE", "On item selected invoked. $curr")
                 if(viewModel.observeUserConfig().value != null && curr != viewModel.observeUserConfig().value?.currency) {
                     //update currency in firebase
-                    Log.d("LUKE", "inside if condition. $curr")
                     viewModel.updateCurrencyPref(curr!!)
                 }
             }
@@ -124,11 +121,7 @@ class MainActivity : AppCompatActivity() {
         binding.contentMain.tabLayout.addOnTabSelectedListener(
             object : OnTabSelectedListener {
                 override fun onTabSelected(tab: TabLayout.Tab) {
-                    //do stuff here
-//                    tab.position
-                    Log.d("LUKE", "Tab selected is ${tab.position}")
                     if(tab.position == 0 ) {
-//                        //select favorites fragment.
                             supportFragmentManager.commit {
                                 replace(R.id.main_frame, FavoriteFragment.newInstance(), "mainFragTag")
                                 setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
@@ -156,7 +149,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    fun hideKeyboard() {
+    private fun hideKeyboard() {
         val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(window.decorView.rootView.windowToken, 0)
     }

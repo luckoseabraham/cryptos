@@ -20,7 +20,7 @@ class CustomMarkerView(context: Context?, layoutResource: Int) :
     override fun refreshContent(e: Entry?, highlight: Highlight?) {
         val mFormat = SimpleDateFormat("HH:mm dd MMM", Locale.ENGLISH)
         if (e != null) {
-            val millis = TimeUnit.MINUTES.toMillis(e.x.toLong())
+            val millis = e.x.toLong()
             tvContent.text = e.y.toString() + " at " + mFormat.format(Date(millis))
         }
         super.refreshContent(e, highlight)

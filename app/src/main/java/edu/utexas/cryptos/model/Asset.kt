@@ -84,7 +84,7 @@ data class Asset(
         EUR
          */
 
-        public val currencyIconMap = hashMapOf<Currency, String>(
+        val currencyIconMap = hashMapOf(
             Currency.AUD to "$",
             Currency.JPY to "¥",
             Currency.NZD to "$",

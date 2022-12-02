@@ -3,10 +3,10 @@ package edu.utexas.cryptos
 import android.graphics.Canvas
 import android.graphics.Color
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import android.view.MenuItem
 import androidx.activity.viewModels
-import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.github.mikephil.charting.components.XAxis
@@ -25,19 +25,14 @@ import edu.utexas.cryptos.databinding.ActivityDetailsBinding
 import edu.utexas.cryptos.misc.CustomMarkerView
 import edu.utexas.cryptos.model.Asset
 import edu.utexas.cryptos.model.Currency
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
-import java.util.concurrent.TimeUnit
-import kotlin.collections.HashMap
 
 
 class DetailsActivity : AppCompatActivity() {
     private lateinit var binding: ActivityDetailsBinding
 
+    private var handler = Handler()
 
     private val viewModel: DetailsViewModel by viewModels()
 
@@ -65,10 +60,8 @@ class DetailsActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         viewModel.fetchAsset(id)
-        var colorMap = HashMap<String, Int>()
+        val colorMap = HashMap<String, Int>()
         viewModel.observeAsset().observe(this){
-            Log.d("LUKE", "got asset for details from observe $it")
-//            binding.desc.text = it.asset.description
             val change_1h = it.asset.change_1h.toFloat()
             binding.oneHour.text = String.format("%.2f", change_1h)  + "%"
             if(change_1h<=0) {
@@ -103,22 +96,20 @@ class DetailsActivity : AppCompatActivity() {
             binding.marketCap.text = Asset.currencyIconMap[Currency.valueOf(curr)] + String.format("%.3f", it.asset.quote[Currency.valueOf(curr)]?.market_cap)
             binding.circSupply.text = it.asset.circulating_supply
 
-        }
+//            viewModel.fetchTimeSeries(id,curr, time_1hr)
 
+        }
 
         val chart = binding.chart
         chart.setDrawGridBackground(false)
 
         // draw points over time
         chart.animateX(1500)
-        chart.setTouchEnabled(true);
-
-        viewModel.fetchTimeSeries(id,curr, time_1hr)
-
+        chart.setTouchEnabled(true)
 
         viewModel.observeTimeSeries().observe(this) {
-            var values = createEntry(it.data, it.window)
-            var dataSet = createDataSet(values, id, colorMap.getOrDefault(it.window, Color.RED))
+            val values = createEntry(it.data, it.window)
+            val dataSet = createDataSet(values, id, colorMap.getOrDefault(it.window, Color.RED))
             val lineData = LineData(dataSet)
             chart.data = lineData
             chart.legend.isEnabled = false
@@ -138,7 +129,7 @@ class DetailsActivity : AppCompatActivity() {
                 chart.getTransformer(YAxis.AxisDependency.LEFT)
             )
         )
-        var xAxis = chart.xAxis
+        val xAxis = chart.xAxis
         xAxis.labelRotationAngle = -30f
         xAxis.position = XAxis.XAxisPosition.BOTTOM
         xAxis.setDrawGridLines(false)
@@ -147,78 +138,72 @@ class DetailsActivity : AppCompatActivity() {
         xAxis.valueFormatter = object : ValueFormatter() {
             private val mFormat = SimpleDateFormat("HH:mm  \n dd MMM", Locale.ENGLISH)
             override fun getFormattedValue(value: Float): String {
-                var millis = value.toLong()
-                Log.d("Timeformatingraph"," formatted value from $value is ${mFormat.format(Date(millis))}")
+                val millis = value.toLong()
                 return mFormat.format(Date(millis))
             }
         }
 
-        var yAxisLeft = chart.axisLeft
+        val yAxisLeft = chart.axisLeft
         yAxisLeft.setDrawGridLines(false)
 
-        var yAxisRight = chart.axisRight
+        val yAxisRight = chart.axisRight
         yAxisRight.setDrawGridLines(false)
 
         chart.description.isEnabled = false
 
         chart.setDrawGridBackground(false)
 
-//        val values = ArrayList<Entry>()
-//        val count=30 // This seems to be a really good sweet spot between data frequency and UI
-//        val range=180
-//
-//        for (i in 0 until count) {
-//            val `val`: Float = (Math.random() * range).toFloat() - 30
-//            values.add(Entry(i.toFloat(), `val`))
-//        }
-//
-//        var set1: LineDataSet
-//        entries.add(Entry(1990.toFloat(), 20.toFloat()))
-//        entries.add(Entry(1991.toFloat(), 30.toFloat()))
-//        entries.add(Entry(1992.toFloat(), 40.toFloat()))
-//        entries.add(Entry(1993.toFloat(), 40.toFloat()))
-//        entries.add(Entry(1994.toFloat(), 30.toFloat()))
-//        entries.add(Entry(1995.toFloat(), 40.toFloat()))
-//        entries.add(Entry(1996.toFloat(), 20.toFloat()))
-//        entries.add(Entry(1997.toFloat(), 40.toFloat()))
-//        entries.add(Entry(1998.toFloat(), 40.toFloat()))
-//        entries.add(Entry(1999.toFloat(), 10.toFloat()))
-//        entries.add(Entry(2000.toFloat(), 40.toFloat()))
-//        entries.add(Entry(2001.toFloat(), 5.toFloat()))
-//        entries.add(Entry(2002.toFloat(), 40.toFloat()))
-//        entries.add(Entry(2003.toFloat(), 40.toFloat()))
-//        entries.add(Entry(2004.toFloat(), 40.toFloat()))
-//        entries.add(Entry(2005.toFloat(), 40.toFloat()))
-//        entries.add(Entry(2006.toFloat(), 40.toFloat()))
-//        entries.add(Entry(2007.toFloat(), 40.toFloat()))
-
-
-
-
-
         var window = time_1hr
+
 
         binding.timeButtons.addOnTabSelectedListener(
             object : TabLayout.OnTabSelectedListener {
                 override fun onTabSelected(tab: TabLayout.Tab) {
                     //tab.position
-                    Log.d("LUKE", "Tab selected is ${tab.position}")
                     when(tab.position) {
                         0 -> {
                             //1hour
-                          viewModel.fetchTimeSeries(id,curr,time_1hr)
+                            viewModel.fetchTimeSeries(id,curr,time_1hr)
                             window = time_1hr
+                            handler.removeCallbacksAndMessages(null)
+                            val myRunnable: Runnable = object : Runnable {
+                                override fun run() {
+                                    viewModel.fetchTimeSeries(id,curr, time_1hr)
+                                    viewModel.fetchAsset(id)
+                                    handler.postDelayed(this, 2000L)
+                                }
+                            }
+                            handler.post(myRunnable)
                         }
                         1 -> {
                             //24 hour
                             viewModel.fetchTimeSeries(id,curr,time_24hr)
                             window = time_24hr
+                            handler.removeCallbacksAndMessages(null)
+                            val myRunnable: Runnable = object : Runnable {
+                                override fun run() {
+                                    viewModel.fetchTimeSeries(id,curr, time_24hr)
+                                    viewModel.fetchAsset(id)
+                                    handler.postDelayed(this, 2000L)
+                                }
+                            }
+
+                            handler.post(myRunnable)
 
                         }
                         else -> {
                             //7 days
-                            viewModel.fetchTimeSeries(id,curr,time_24hr)
-                            window = time_24hr
+                            viewModel.fetchTimeSeries(id,curr, time_7d)
+                            window = time_7d
+                            handler.removeCallbacksAndMessages(null)
+                            val myRunnable: Runnable = object : Runnable {
+                                override fun run() {
+                                    viewModel.fetchTimeSeries(id,curr, time_7d)
+                                    viewModel.fetchAsset(id)
+                                    handler.postDelayed(this, 2000L)
+                                }
+                            }
+                            handler.post(myRunnable)
                         }
                     }
                 }
@@ -227,13 +212,16 @@ class DetailsActivity : AppCompatActivity() {
                 override fun onTabReselected(tab: TabLayout.Tab) {}
             }
         )
-        GlobalScope.launch {
-            while (coroutineContext.isActive) {
-                delay(10000L)
-                viewModel.fetchTimeSeries(id,curr, window)
+
+        val myRunnable: Runnable = object : Runnable {
+            override fun run() {
+                viewModel.fetchTimeSeries(id,curr, time_1hr)
                 viewModel.fetchAsset(id)
+                handler.postDelayed(this, 2000L)
             }
         }
+        handler.post(myRunnable)
+
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -241,29 +229,28 @@ class DetailsActivity : AppCompatActivity() {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         val id = item.itemId
-
         return if (id == android.R.id.home) {
             // If user clicks "up", then it it as if they clicked OK.  We commit
             // changes and return to parent
+            handler.removeCallbacksAndMessages(null)
             supportActionBar?.setDisplayHomeAsUpEnabled(false)
             this.finish()
             return true
         } else super.onOptionsItemSelected(item)
     }
 
-    fun createDataSet(entries: List<Entry>, id: String, color: Int) : LineDataSet{
+    private fun createDataSet(entries: List<Entry>, id: String, color: Int) : LineDataSet{
 
         val dataSet = LineDataSet(entries, id)
         dataSet.cubicIntensity = 0.2f
         dataSet.mode = LineDataSet.Mode.CUBIC_BEZIER
-//        dataSet.mode = LineDataSet.Mode.HORIZONTAL_BEZIER
         dataSet.lineWidth = 1.8f
         dataSet.circleRadius = 4f
-        dataSet.color = color;
-        dataSet.setCircleColor(color);
-        dataSet.highLightColor = color;
-        dataSet.fillColor = color;
-        dataSet.fillAlpha = 110;
+        dataSet.color = color
+        dataSet.setCircleColor(color)
+        dataSet.highLightColor = color
+        dataSet.fillColor = color
+        dataSet.fillAlpha = 110
         // set the filled area
         dataSet.setDrawFilled(true)
         // set color of filled area
@@ -291,7 +278,6 @@ class DetailsActivity : AppCompatActivity() {
             entryValues.add(count, Entry(i.key.toFloat(), i.value))
             count += 1
         }
-        Log.d("Timeformatingraph", "Tab selected is ${entryValues}")
         return entryValues
     }
 
@@ -325,14 +311,3 @@ class CustomXAxisRenderer(viewPortHandler: ViewPortHandler?, xAxis: XAxis?, tran
         )
     }
 }
-
-//class CustomXAxisRenderer(viewPortHandler: ViewPortHandler?, xAxis: XAxis?, trans: Transformer?) : XAxisRenderer(viewPortHandler, xAxis, trans) {
-//    override fun drawLabel(c: Canvas?, formattedLabel: String, x: Float, y: Float, anchor: MPPointF?, angleDegrees: Float) {
-//        val line: List<String> = formattedLabel.split("\n")
-//        Utils.drawXAxisValue(c, line[0], x, y, mAxisLabelPaint, anchor, angleDegrees)
-//        for (i in 1 until line.size) {
-//            Utils.drawXAxisValue(c, line[i], x, y + mAxisLabelPaint.textSize * i,
-//                mAxisLabelPaint, anchor, angleDegrees)
-//        }
-//    }
-//}
